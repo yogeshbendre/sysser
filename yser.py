@@ -27,7 +27,7 @@ def runCommand(cmd):
         fp.write(mycmd)
 
     sp.check_output('chmod 777 '+outputFolder+'myscript.sh',shell=True)
-    sp.check_output('bash '+outputFolder+'myscript.sh',shell=True)
+    sp.check_output('/bin/bash '+outputFolder+'myscript.sh',shell=True)
     myout = ''
     with open(outputFolder+'myout.txt','r') as fp:
         myout = fp.read()
@@ -215,7 +215,7 @@ def getServiceBootInfo(fp):
 if __name__ == "__main__":
 
     vcName = "localhost"
-    outputFolder = "./"
+    outputFolder = "/var/log/vmware/"
     helpstring = "Options: -v <vcname> -f <output folder path>"
     opts = None
     args = None
@@ -246,32 +246,37 @@ if __name__ == "__main__":
         vcName = args.vcName
     
     myheader = 'date|vcName|service|pid|boot_time_in_sec|last_started_at|last_triggered_at'
+    print('Arguments: ')
+    print('f '+outputFolder)
+    print('v '+vcName)
     try:
         fp = open(mytextoutputfile,'r')
         fp.close()
+        print('File exists  '+mytextoutputfile)
     except Exception as e8:
         print(str(e8))
         with open(mytextoutputfile,'w') as fp:
             fp.write(myheader)
     
-        myjson = {}
-        try:
-            myjson = json.load(open(myjsonoutputfile,'r'))
-            
-        except Exception as e9:
-            print(str(e9))
-            with open(myjsonoutputfile,'w') as fp:
-                myjson = {}
-                json.dump(myjson,fp)
-                fp.close()
-            
+    myjson = {}
+    try:
+        myjson = json.load(open(myjsonoutputfile,'r'))
+        print('File exists  '+myjsonoutputfile)
+        
+    except Exception as e9:
+        print(str(e9))
+        with open(myjsonoutputfile,'w') as fp:
+            myjson = {}
+            json.dump(myjson,fp)
+            fp.close()
+        
+    
+    
+    with open(mytextoutputfile,'a') as fp:
+        #fp.write(myheader)
         
         
-        with open(mytextoutputfile,'a') as fp:
-            #fp.write(myheader)
-            
-            
-            myvalue,mykey = getSystemBootInfo()
-            checkAndPush(fp,'\n'+myvalue,mykey)
-            getServiceBootInfo(fp)
-            
+        myvalue,mykey = getSystemBootInfo()
+        checkAndPush(fp,'\n'+myvalue,mykey)
+        getServiceBootInfo(fp)
+        
