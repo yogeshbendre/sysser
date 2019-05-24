@@ -10,19 +10,41 @@ import os
 import subprocess as sp
 from datetime import datetime as dt, timedelta as td
 import json
+import socket
+import argparse
+
 
 mytextoutputfile = '/var/log/vmware/BootData.txt'
 myjsonoutputfile = '/var/log/vmware/BootData.json'
+vcName = "localhost"
+outputFolder = "./"
 
+def runCommand(cmd):
+    print("Running command "+cmd)
+    mycmd = 'export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/java/jre-vmware/bin:/opt/vmware/bin"'
+    mycmd = mycmd + '\n' + cmd + ' > '+outputFolder+'myout.txt 2> ' + outputFolder+'myout.txt\n'
+    with open(outputFolder+'myscript.sh','w') as fp:
+        fp.write(mycmd)
+
+    sp.check_output('chmod 777 '+outputFolder+'myscript.sh',shell=True)
+    sp.check_output('bash '+outputFolder+'myscript.sh',shell=True)
+    myout = ''
+    with open(outputFolder+'myout.txt','r') as fp:
+        myout = fp.read()
+    print(myout)
+    return(myout)
 
 def getServiceList():
     mylist = []
     try:
-        mylist = str(sp.check_output('/usr/sbin/vmon-cli --list',shell=True)).replace("b'","").split('\\n')[:-1]
+        #mylist = str(sp.check_output('/usr/sbin/vmon-cli --list',shell=True)).replace("b'","").split('\\n')[:-1]
+        print("Getting Service ist")
+        mylist = str(runCommand('/usr/sbin/vmon-cli --list')).split('\n')[:-1]
     except Exception as e:
         mylist = []
         print('getServiceList Failed: '+str(e))
     
+    print(mylist)
     return(mylist)
     
     
@@ -34,8 +56,8 @@ def getServiceStat(sname='vsphere-ui',pid=0):
     ## Get the PID
     base_sname = sname
     mycmd = ' /usr/sbin/vmon-cli --status ' + base_sname  # + ' | grep CurrentRunStateDuration'
-    d = str(sp.check_output(mycmd, shell=True))
-    pid = d.split('ProcessId:')[1].split('\\n')[0].strip()
+    d = str(runCommand(mycmd))
+    pid = d.split('ProcessId:')[1].split('\n')[0].strip()
     print('Service: '+sname+'\n'+d)
     
     #base_sname = sname.replace('.launcher','').replace('vmware-','')
@@ -126,7 +148,8 @@ def getServiceStat(sname='vsphere-ui',pid=0):
     print(sname + ' Time Taken: '+str((myendTime-myStartDate2).total_seconds()))
     #print('End Time '+ str(myendduration))
     #print('Time Taken: ' + str(myendduration-mystartduration))
-    myinfo = sname+'|'+str(pid)+'|'+str((myendTime-myStartDate2).total_seconds())+'|'+str(myendTime)+'|'+str(myStartDate2)
+    mydateepoch = myStartDate2.strftime("%s")
+    myinfo = mydateepoch+'|'+vcName+'|'+sname+'|'+str(pid)+'|'+str((myendTime-myStartDate2).total_seconds())+'|'+str(myendTime)+'|'+str(myStartDate2)
     print(sname+" Final Info: "+myinfo)
     return(myinfo,sname+'_'+pid)
 
@@ -138,11 +161,12 @@ def getSystemBootInfo():
     myout = str(sp.check_output("who -b",shell=True)).replace("b'","").replace('\\n','').replace("'","").strip()
     print(myout)
     sysboottime = myout.split("system boot")[1].strip()
+    mysysboottime = dt.strptime(sysboottime,"%Y-%m-%d %H:%M")
     myout = str(sp.check_output("systemd-analyze",shell=True)).replace("b'","").replace('\\n','').replace("'","").strip()
     sysb=myout.split('=')[1].strip().replace('s','')
-    myvalue='SYSTEM|0|'+sysb+'|'+sysboottime
+    myvalue=mysysboottime.strftime("%s")+'|'+vcName+'|system|0|'+sysb+'|'+str(mysysboottime)+'|'+str(mysysboottime)
     print(myout)
-    return(myvalue,'SYSTEM'+'_'+str(sysboottime))
+    return(myvalue,'system'+'_'+str(sysboottime))
 
 
 
@@ -168,7 +192,7 @@ def checkAndPush(fp,myval,mykey):
     
     
 def getServiceBootInfo(fp):
-    rootdir = '/var/log/vmware/vapi/monitoring/PROCESS-LEVEL-UTILIZATION'
+    
     myservices = getServiceList()
 
     for s in myservices:
@@ -181,41 +205,73 @@ def getServiceBootInfo(fp):
                     
 
 
-myheader = 'Service|PID|BootTimeInSec|LastBootedAt'
-try:
-    fp = open(mytextoutputfile,'r')
-    fp.close()
-except Exception as e8:
-    print(str(e8))
-    with open(mytextoutputfile,'w') as fp:
-        fp.write(myheader)
 
-myjson = {}
-try:
-    myjson = json.load(open(myjsonoutputfile,'r'))
+
+
+
+
+
+
+if __name__ == "__main__":
+
+    vcName = "localhost"
+    outputFolder = "./"
+    helpstring = "Options: -v <vcname> -f <output folder path>"
+    opts = None
+    args = None
     
-except Exception as e9:
-    print(str(e9))
-    with open(myjsonoutputfile,'w') as fp:
-        myjson = {}
-        json.dump(myjson,fp)
+    try:
+        vcName = socket.gethostname()
+    except Exception as e0:
+        print(str(e0))
+    
+    
+    
+    
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument("-v", "--vcName", help="Specify vCenter Name. Default: system hostname",type=str)
+    parser.add_argument("-f","--folder", type=str,help="Specify output folder. Default: current directory")
+    args = parser.parse_args()
+    
+    if args.folder:
+        outputFolder = args.folder
+        if(outputFolder[-1]!='/'):
+            outputFolder=outputFolder+'/'
+        mytextoutputfile = outputFolder+'BootData.txt'
+        myjsonoutputfile = outputFolder+'BootData.json'
+
+        
+    if args.vcName:
+        vcName = args.vcName
+    
+    myheader = 'date|vcName|service|pid|boot_time_in_sec|last_started_at|last_triggered_at'
+    try:
+        fp = open(mytextoutputfile,'r')
         fp.close()
+    except Exception as e8:
+        print(str(e8))
+        with open(mytextoutputfile,'w') as fp:
+            fp.write(myheader)
     
-
-
-with open(mytextoutputfile,'a') as fp:
-    #fp.write(myheader)
-    
-    
-    myvalue,mykey = getSystemBootInfo()
-    checkAndPush(fp,'\n'+myvalue,mykey)
-    getServiceBootInfo(fp)
-    
-    
-    
-    #getServiceData()
-    
-
-
-
-
+        myjson = {}
+        try:
+            myjson = json.load(open(myjsonoutputfile,'r'))
+            
+        except Exception as e9:
+            print(str(e9))
+            with open(myjsonoutputfile,'w') as fp:
+                myjson = {}
+                json.dump(myjson,fp)
+                fp.close()
+            
+        
+        
+        with open(mytextoutputfile,'a') as fp:
+            #fp.write(myheader)
+            
+            
+            myvalue,mykey = getSystemBootInfo()
+            checkAndPush(fp,'\n'+myvalue,mykey)
+            getServiceBootInfo(fp)
+            
