@@ -37,9 +37,9 @@ def runCommand(cmd):
 def getServiceList():
     mylist = []
     try:
-        #mylist = str(sp.check_output('/usr/sbin/vmon-cli --list',shell=True)).replace("b'","").split('\\n')[:-1]
+        mylist = str(sp.check_output('/usr/sbin/vmon-cli --list',shell=True)).replace("b'","").split('\\n')[:-1]
         print("Getting Service ist")
-        mylist = str(runCommand('/usr/sbin/vmon-cli --list')).split('\n')[:-1]
+        #mylist = str(runCommand('/usr/sbin/vmon-cli --list')).split('\n')[:-1]
     except Exception as e:
         mylist = []
         print('getServiceList Failed: '+str(e))
@@ -56,8 +56,12 @@ def getServiceStat(sname='vsphere-ui',pid=0):
     ## Get the PID
     base_sname = sname
     mycmd = ' /usr/sbin/vmon-cli --status ' + base_sname  # + ' | grep CurrentRunStateDuration'
-    d = str(runCommand(mycmd))
-    pid = d.split('ProcessId:')[1].split('\n')[0].strip()
+    #d = str(runCommand(mycmd))
+    d=str(sp.check_output(mycmd, shell=True))
+    
+    
+    
+    pid = d.split('ProcessId:')[1].split('\\n')[0].strip()
     print('Service: '+sname+'\n'+d)
     
     #base_sname = sname.replace('.launcher','').replace('vmware-','')
@@ -239,7 +243,7 @@ if __name__ == "__main__":
         if(outputFolder[-1]!='/'):
             outputFolder=outputFolder+'/'
         mytextoutputfile = outputFolder+'BootData.txt'
-        myjsonoutputfile = outputFolder+'BootData.json'
+        #myjsonoutputfile = outputFolder+'BootData.json'
 
         
     if args.vcName:
