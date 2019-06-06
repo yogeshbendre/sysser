@@ -12,6 +12,14 @@ import socket
 import argparse
 import sys
 
+
+def runMyCmd(cmd):
+    print("Running Cmd "+cmd)
+    d = str(sp.check_output(cmd,shell=True)).replace("b'","").replace("'","")
+    print(d)
+    return(d)
+
+
 def getStartTimeOfPID(pid):
     
     currentTime = dt.now()
@@ -60,9 +68,6 @@ def getStartTimeOfPID(pid):
 
 
 
-def runMyCmd(cmd):
-    d = str(sp.check_output(cmd,shell=True)).replace("b'","").replace("'","")
-    return(d)
 
 def getServiceStatNonVmon(sname):
     try:
@@ -71,13 +76,24 @@ def getServiceStatNonVmon(sname):
         print(mypid)
         print("Service: "+sname)
         pidStartTime = getStartTimeOfPID(mypid)
-        getStartTimeOfService(sname)
+        print("Got pidStartTime: "+str(pidStartTime))
+        serviceStartTime = getStartTimeOfService(sname)
+        print("Got serviceStartTime : "+str(serviceStartTime))
+        mydateepoch = pidStartTime.strftime("%s")
+        vcName = "vcname"
+        myinfo = mydateepoch+'|'+vcName+'|'+sname+'|'+str(mypid)+'|'+str((serviceStartTime-pidStartTime).total_seconds())+'|'+str(serviceStartTime)+'|'+str(pidStartTime)
+        print(sname+" Final Info: "+myinfo)
+        return(myinfo,sname+'_'+mypid)
+    
     except Exception as e:
         print("Failed stat for "+sname + " : "+str(e))
 
 def getStartTimeOfService(sname):
-    
-    return(getattr(sys.modules[__name__], "getStartTimeOf_%s" % sname)())
+    sname = sname.replace("vmware-","")
+    myf = getattr(sys.modules[__name__], "getStartTimeOf_%s" % sname)
+    myStartTime=myf()
+    print("Recieved start time : "+str(myStartTime))
+    return(myStartTime)
     
 
 
@@ -88,6 +104,60 @@ def getStartTimeOf_vmafdd():
     mytimestr = d.split("+")[0]
     myStartDate = dt.strptime(mytimestr, '%Y-%m-%dT%H:%M:%S.%f')
     print(myStartDate)
+    return(myStartDate)
     
+
+def getStartTimeOf_vmcad():
+    print("Getting start time of vmcad")
+    mycmd = "cat /var/log/vmware/vmcad/vmcad-syslog.log | grep 'Starting VMware Certificate Servicedone' | tail -n 1"
+    d = runMyCmd(mycmd)
+    mytimestr = d.split("+")[0]
+    myStartDate = dt.strptime(mytimestr, '%Y-%m-%dT%H:%M:%S.%f')
+    print(myStartDate)
+    return(myStartDate)
+
+
+def getStartTimeOf_vmdird():
+    print("Getting start time of vmdird")
+    mycmd = "cat /var/log/vmware/vmdird/vmdird-syslog.log | grep 'Starting VMware Directory Servicedone' | tail -n 1"
+    d = runMyCmd(mycmd)
+    mytimestr = d.split("+")[0]
+    myStartDate = dt.strptime(mytimestr, '%Y-%m-%dT%H:%M:%S.%f')
+    print(myStartDate)
+    return(myStartDate)
+
+
+def getStartTimeOf_pod():
+    print("Getting start time of pod")
+    mycmd = "cat /var/log/vmware/pod/pod-startup.log | grep 'Starting Pod' | tail -n 1"
+    d = runMyCmd(mycmd)
+    mytimestr = d.split("]")[0].split("[")[1]
+    myStartDate = dt.strptime(mytimestr, '%a %b %d %H:%M:%S %Z %Y')
+    print(myStartDate)
+    return(myStartDate)
     
-getServiceStatNonVmon("vmafdd")
+
+def getStartTimeOf_vmon():
+    print("Getting start time of vmon")
+    mycmd = "cat /var/log/vmware/vmon/vmon.log | grep -i 'Starting vmon' | tail -n 1"
+    d = runMyCmd(mycmd)
+    mytimestr = d.split("z|")[1]
+    myStartDate = dt.strptime(mytimestr, '%Y-%m-%dT%H:%M:%S.%f')
+    print(myStartDate)
+    return(myStartDate)
+
+def getStartTimeOf_lwsmd():
+    return(None)
+    
+def getStartTimeForNonVmon():
+    
+    nonVmonServices = ["vmon","vmdird","vmcad","vmafdd","vmware-pod","lwsmd"]
+    
+    for sname in nonVmonServices:
+        try:
+            print("Check Service: "+sname)
+            getServiceStatNonVmon(sname)
+        except Exception as e:
+            print("Failed Service "+sname+" : "+str(e))
+
+getStartTimeForNonVmon()
