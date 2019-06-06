@@ -14,8 +14,8 @@ import socket
 import argparse
 
 
-mytextoutputfile = '/var/log/vmware/BootData.txt'
-myjsonoutputfile = '/var/log/vmware/BootData.json'
+mytextoutputfile = '/var/log/vmware/BootData2.txt'
+myjsonoutputfile = '/var/log/vmware/BootData2.json'
 vcName = "localhost"
 outputFolder = "./"
 
