@@ -1,0 +1,15 @@
+LocalizationManagerMo::Init
+VpxdInvtHost::Init
+VpxdInvtVm::Init(dasProtMap)
+VpxdInvtDVPortGroup::Init2
+AlarmMoManager::Init
+VpxdInvtHost::Init3
+VpxdDatastore::Init2
+ServerApp::Init
+VpxdInvtDVS::InitiatePostVCStartUpOperation
+Tagging::LoadVmAndHostTagAssociationsFromDb
+
+
+
+
+LocalizationManagerMo::Init','VpxdInvtHost::Init','VpxdInvtVm::Init(dasProtMap)','VpxdInvtDVPortGroup::Init2','AlarmMoManager::Init','VpxdInvtHost::Init3','VpxdDatastore::Init2','ServerApp::Init','VpxdInvtDVS::InitiatePostVCStartUpOperation','Tagging::LoadVmAndHostTagAssociationsFromDb
