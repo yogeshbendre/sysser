@@ -1,0 +1,101 @@
+<html>
+
+<body>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+     <div id="chart_div"></div>
+<script>   
+    google.charts.load('current', {'packages':['gantt']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function daysToMilliseconds(days) {
+      return days * 24 * 60 * 60 * 1000;
+    }
+
+    function drawChart() {
+
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Task ID');
+      data.addColumn('string', 'Task Name');
+      data.addColumn('date', 'Start Date');
+      data.addColumn('date', 'End Date');
+      data.addColumn('number', 'Duration');
+      data.addColumn('number', 'Percent Complete');
+      data.addColumn('string', 'Dependencies');
+	  data.addColumn({type: 'string', role: 'tooltip'});
+
+      data.addRows([
+	  
+['content-library','content-library', new Date('2019-06-10 00:49:48.741964'), new Date('2019-06-10 00:50:43.617000'),null,100,'rhttpproxy,sca,vapi-endpoint,vpxd,vpxd-svcs','content-libraryDepends on: rhttpproxy,sca,vapi-endpoint,vpxd,vpxd-svcs'],
+['vapi-endpoint','vapi-endpoint', new Date('2019-06-10 01:06:21.674800'), new Date('2019-06-10 01:06:50.085000'),null,100,null,'vapi-endpointDepends on: null'],
+['analytics','analytics', new Date('2019-06-10 01:23:23.905471'), new Date('2019-06-10 01:23:40.746000'),null,100,null,'analyticsDepends on: null'],
+['vmdird','vmdird', new Date('2019-06-10 06:09:42.495844'), new Date('2019-06-10 06:09:45.530209'),null,100,null,'vmdirdDepends on: null'],
+['vmcad','vmcad', new Date('2019-06-10 06:09:45.627770'), new Date('2019-06-10 06:09:47.097548'),null,100,null,'vmcadDepends on: null'],
+['vmafdd','vmafdd', new Date('2019-06-10 06:09:40.715735'), new Date('2019-06-10 06:09:42.484698'),null,100,null,'vmafddDepends on: null'],
+['analytics','analytics', new Date('2019-06-10 06:09:46.898173'), new Date('2019-06-10 06:10:23.057000'),null,100,null,'analyticsDepends on: null'],
+['applmgmt','applmgmt', new Date('2019-06-10 06:09:48.178834'), new Date('2019-06-10 06:10:01.844000'),null,100,'statsmonitor','applmgmtDepends on: statsmonitor'],
+['certificatemanagement','certificatemanagement', new Date('2019-06-10 06:10:38.458698'), new Date('2019-06-10 06:10:53.651000'),null,100,null,'certificatemanagementDepends on: null'],
+['cis-license','cis-license', new Date('2019-06-10 06:09:47.736523'), new Date('2019-06-10 06:10:17.067000'),null,100,null,'cis-licenseDepends on: null'],
+['eam','eam', new Date('2019-06-10 06:09:49.088248'), new Date('2019-06-10 06:10:27.331000'),null,100,null,'eamDepends on: null'],
+['envoy','envoy', new Date('2019-06-10 06:09:47.383441'), new Date('2019-06-10 06:09:48.719000'),null,100,null,'envoyDepends on: null'],
+['hvc','hvc', new Date('2019-06-10 06:10:38.670031'), new Date('2019-06-10 06:10:55.467000'),null,100,null,'hvcDepends on: null'],
+['lookupsvc','lookupsvc', new Date('2019-06-10 06:09:51.014507'), new Date('2019-06-10 06:10:38.460000'),null,100,null,'lookupsvcDepends on: null'],
+['rhttpproxy','rhttpproxy', new Date('2019-06-10 06:09:47.589354'), new Date('2019-06-10 06:09:50.338000'),null,100,null,'rhttpproxyDepends on: null'],
+['sca','sca', new Date('2019-06-10 06:10:38.867740'), new Date('2019-06-10 06:11:08.351000'),null,100,'rhttpproxy','scaDepends on: rhttpproxy'],
+['statsmonitor','statsmonitor', new Date('2019-06-10 06:08:13.195265'), new Date('2019-06-10 06:08:14.872000'),null,100,null,'statsmonitorDepends on: null'],
+['sts','sts', new Date('2019-06-10 06:09:46.469918'), new Date('2019-06-10 06:11:04.479000'),null,100,null,'stsDepends on: null'],
+['topologysvc','topologysvc', new Date('2019-06-10 06:10:38.748225'), new Date('2019-06-10 06:10:53.677000'),null,100,null,'topologysvcDepends on: null'],
+['trustmanagement','trustmanagement', new Date('2019-06-10 06:10:39.033736'), new Date('2019-06-10 06:10:53.698000'),null,100,null,'trustmanagementDepends on: null'],
+['vapi-endpoint','vapi-endpoint', new Date('2019-06-10 06:10:39.389479'), new Date('2019-06-10 06:11:15.834000'),null,100,null,'vapi-endpointDepends on: null'],
+['vcha','vcha', new Date('2019-06-10 06:08:15.681712'), new Date('2019-06-10 06:08:18.989000'),null,100,null,'vchaDepends on: null'],
+['vlcm','vlcm', new Date('2019-06-10 06:10:38.989298'), new Date('2019-06-10 06:10:50.230000'),null,100,null,'vlcmDepends on: null'],
+['vmonapi','vmonapi', new Date('2019-06-10 06:11:00.335495'), new Date('2019-06-10 06:11:02.283000'),null,100,null,'vmonapiDepends on: null'],
+['vmware-postgres-archiver','vmware-postgres-archiver', new Date('2019-06-10 06:09:47.636352'), new Date('2019-06-10 06:09:49.123000'),null,100,null,'vmware-postgres-archiverDepends on: null'],
+['vmware-vpostgres','vmware-vpostgres', new Date('2019-06-10 06:09:12.928844'), new Date('2019-06-10 06:09:32.042000'),null,100,null,'vmware-vpostgresDepends on: null'],
+['vpxd-svcs','vpxd-svcs', new Date('2019-06-10 06:10:38.515577'), new Date('2019-06-10 06:11:24.535000'),null,100,null,'vpxd-svcsDepends on: null'],
+['vsphere-client','vsphere-client', new Date('2019-06-10 06:09:50.980565'), new Date('2019-06-10 06:11:30.981000'),null,100,'rhttpproxy','vsphere-clientDepends on: rhttpproxy'],
+['vsphere-ui','vsphere-ui', new Date('2019-06-10 06:09:51.286772'), new Date('2019-06-10 06:10:57.189000'),null,100,'rhttpproxy','vsphere-uiDepends on: rhttpproxy'],
+['content-library','content-library', new Date('2019-06-10 06:13:17.046396'), new Date('2019-06-10 06:14:21.597000'),null,100,'rhttpproxy,sca,vapi-endpoint,vpxd,vpxd-svcs','content-libraryDepends on: rhttpproxy,sca,vapi-endpoint,vpxd,vpxd-svcs'],
+['perfcharts','perfcharts', new Date('2019-06-10 06:13:17.414242'), new Date('2019-06-10 06:13:48.809000'),null,100,'sca,vpxd,vsphere-client','perfchartsDepends on: sca,vpxd,vsphere-client'],
+['pschealth','pschealth', new Date('2019-06-10 06:13:15.782474'), new Date('2019-06-10 06:13:18.318000'),null,100,'vpxd','pschealthDepends on: vpxd'],
+['sps','sps', new Date('2019-06-10 06:13:16.992710'), new Date('2019-06-10 06:20:06.730000'),null,100,'vpxd,vpxd-svcs','spsDepends on: vpxd,vpxd-svcs'],
+['updatemgr','updatemgr', new Date('2019-06-10 06:13:18.112634'), new Date('2019-06-10 06:13:20.288000'),null,100,'vpxd','updatemgrDepends on: vpxd'],
+['vmware-postgres-archiver','vmware-postgres-archiver', new Date('2019-06-10 06:13:21.012256'), new Date('2019-06-10 06:13:23.907000'),null,100,null,'vmware-postgres-archiverDepends on: null'],
+['vpxd','vpxd', new Date('2019-06-10 06:11:26.775549'), new Date('2019-06-10 06:13:16.095000'),null,100,'vpxd-svcs','vpxdDepends on: vpxd-svcs'],
+['vsan-dps','vsan-dps', new Date('2019-06-10 06:13:17.598049'), new Date('2019-06-10 06:14:12.232000'),null,100,'vpxd','vsan-dpsDepends on: vpxd'],
+['vsan-health','vsan-health', new Date('2019-06-10 06:13:15.961426'), new Date('2019-06-10 06:14:29.786000'),null,100,'vpxd','vsan-healthDepends on: vpxd'],
+['vsm','vsm', new Date('2019-06-10 06:13:17.372026'), new Date('2019-06-10 06:13:44.975000'),null,100,'vpxd','vsmDepends on: vpxd']
+	  //['vsphere-ui','vsphere-ui', new Date("2019-06-10 06:09:47.383441"), new Date("2019-06-10 06:09:49.383441"),null,100,'rhttpproxy'],
+	  //['rhttpproxy','rhttpproxy', new Date("2019-06-10 06:09:39.383441"), new Date("2019-06-10 06:09:41.383441"),null,100,null]
+ 
+      ]);
+
+      var options = {
+		
+        height: 1000,
+		width: 1200,
+		gantt:{
+		labelStyle: {
+		
+		fontSize: 14,
+		color: '#757575'
+		},
+		barHeight:5,
+		criticalPathEnabled: false, // Critical path arrows will be the same as other arrows.
+        arrow: {
+              angle: 45,
+              width: 2,
+              color: 'grey',
+              radius: 0
+            }
+          }
+		
+      };
+
+      var chart = new google.visualization.Gantt(document.getElementById('chart_div'));
+
+      chart.draw(data, options);
+    }
+</script>
+</body>   
+   
+</html>

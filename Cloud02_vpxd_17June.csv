@@ -1,0 +1,7 @@
+time,stcomp_vpxd_timestamp,source,hostname,stcomp_vpxd_subcomp_name,Max of stcomp_vpxd_comp_api_time (ST Charts),Sum of stcomp_vpxd_comp_api_time (ST Charts)
+2019-06-17T10:30:00.000Z,2019-06-17t10:39:55,10.146.13.19,cloud02-w3.stls.local,serverapp::init [totaltime],71344,142688
+2019-06-17T10:30:00.000Z,2019-06-17t10:38:53,10.146.13.19,cloud02-w3.stls.local,[localizationmanagermo::init()],8533,17066
+2019-06-17T10:30:00.000Z,2019-06-17t10:39:33,10.146.13.19,cloud02-w3.stls.local,[vpxdinvtvm::init(dasprotmap)],8533,17066
+2019-06-17T10:30:00.000Z,2019-06-17t10:39:24,10.146.13.19,cloud02-w3.stls.local,[vpxdinvthost::init()],2752,5504
+2019-06-17T10:30:00.000Z,2019-06-17t10:39:37,10.146.13.19,cloud02-w3.stls.local,[alarmmomanager::init()],1617,3234
+2019-06-17T10:30:00.000Z,2019-06-17t10:39:46,10.146.13.19,cloud02-w3.stls.local,[vpxddatastore::init2()],1333,2666

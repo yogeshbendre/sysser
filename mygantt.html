@@ -1,0 +1,62 @@
+<html>
+
+<body>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+     <div id="chart_div"></div>
+<script>   
+    google.charts.load('current', {'packages':['gantt']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function daysToMilliseconds(days) {
+      return days * 24 * 60 * 60 * 1000;
+    }
+
+    function drawChart() {
+
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Task ID');
+      data.addColumn('string', 'Task Name');
+      data.addColumn('date', 'Start Date');
+      data.addColumn('date', 'End Date');
+      data.addColumn('number', 'Duration');
+      data.addColumn('number', 'Percent Complete');
+      data.addColumn('string', 'Dependencies');
+	  data.addColumn({type: 'string', role: 'tooltip'});
+
+      data.addRows([
+	  TEMP_MYROWS
+	  //['vsphere-ui','vsphere-ui', new Date("2019-06-10 06:09:47.383441"), new Date("2019-06-10 06:09:49.383441"),null,100,'rhttpproxy'],
+	  //['rhttpproxy','rhttpproxy', new Date("2019-06-10 06:09:39.383441"), new Date("2019-06-10 06:09:41.383441"),null,100,null]
+ 
+      ]);
+
+      var options = {
+		
+        height: 1000,
+		width: 1200,
+		gantt:{
+		labelStyle: {
+		
+		fontSize: 14,
+		color: '#757575'
+		},
+		barHeight:5,
+		criticalPathEnabled: false, // Critical path arrows will be the same as other arrows.
+        arrow: {
+              angle: 45,
+              width: 2,
+              color: 'grey',
+              radius: 0
+            }
+          }
+		
+      };
+
+      var chart = new google.visualization.Gantt(document.getElementById('chart_div'));
+
+      chart.draw(data, options);
+    }
+</script>
+</body>   
+   
+</html>
