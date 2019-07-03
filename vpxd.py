@@ -16,7 +16,7 @@ import sys
 from LIUtils import LIUtils
 
 bootDataJSON = '/var/log/BootData.json'
-vpxdBootDataJSON = '/var/log/vpxdBootData.json'
+vpxdBootDataJSON = '/var/log/vmware/vpxdBootData.json'
 mytextoutputfile = '/var/log/vpxdBootData.txt'
 vpxdLogFile = '/var/log/vmware/vpxd/vpxd.log'
 
@@ -123,7 +123,7 @@ def computeVpxdComponentTimes(mydata,hostname,vpxdPID):
             
             fromTime = str(fromTime)[:-3]
             tookTime = round(int(mydata[c]['took'])/1000)
-            d1 = str(fromTimestamp)+"|"+str(hostname)+"|"+str(c)+"|"+str(vpxdPID)+"|"+str(tookTime)+"|"+str(fromTime)+"|"+str(mydata[c]["time"])+"\n"
+            d1 = str(fromTimestamp)+"|"+str(hostname)+"|"+str(c)+"|"+str(vpxdPID)+"|"+str(tookTime)+"|"+str(mydata[c]["time"])+"|"+str(fromTime)+"\n"
             print("Computed Data: ")
             print(d1)
             
@@ -172,7 +172,7 @@ def markProcessed(vpxdPID):
         vpxdBootData = {}
     
     try:
-        vpxdBootData[str(vpxdPID)]="Done"
+        vpxdBootData["vpxd_"+str(vpxdPID)]="Done"
         json.dump(vpxdBootData,open(vpxdBootDataJSON,"w"))
     except Exception as e2:
         print("Mark Processed failed: "+str(e2))
@@ -186,7 +186,8 @@ def pushHeaderAndCreateFile():
         fp.close()
     except Exception as e:
         print("pushHeaderAndCreateFile failed: "+str(e)+" Need to create file")
-        myheader = 'date|hostname|component|PID|tooksec|ComponentStartTriggeredAt|ComponentUpAt\n'
+        #myheader = 'date|hostname|component|PID|tooksec|ComponentStartTriggeredAt|ComponentUpAt\n'
+        myheader = 'date|vcName|component|pid|boot_time_in_sec|last_started_at|last_triggered_at\n'
         with open(mytextoutputfile,"w") as fp:
             fp.write(myheader)
         
@@ -262,7 +263,7 @@ def findVpxdComponentTimes(hostname):
             print("Received my data")
             csvdata = computeVpxdComponentTimes(mydata,hostname,vpxdPID)
             
-            vpxddt = ""+str(round(dt.strptime(vpxdPIDTime,"%Y-%m-%d %H:%M:%S.%f").timestamp()))+"|"+str(hostname)+"|vpxd|"+str(vpxdPID)+"|"+str(vpxdTook)+"|"+str(vpxdPIDTime)[:-3]+"|"+str(vpxdStartTime)[:-3]
+            vpxddt = ""+str(round(dt.strptime(vpxdPIDTime,"%Y-%m-%d %H:%M:%S.%f").timestamp()))+"|"+str(hostname)+"|vpxd|"+str(vpxdPID)+"|"+str(vpxdTook)+"|"+str(vpxdStartTime)[:-3]+"|"+str(vpxdPIDTime)[:-3]
             print("Received CSV Data")
             if csvdata is not None:
                 csvdata = vpxddt+"\n"+csvdata
@@ -309,7 +310,7 @@ def parseCompTimes(mycomplogs,hostname,vpxdPID,vpxdPIDTime,vpxdStartTime):
                 
                 mtimestamp0 = round((mtimestamp*1000-int(mtook))/1000)
                 mtime0 = dt.fromtimestamp(mtimestamp0)
-                d1 = str(mtimestamp0)+"|"+str(hostname)+"|"+str(mcomp)+"|"+str(vpxdPID)+"|"+str(mtook)+"|"+str(mtime0)[:-3]+"|"+str(mtime)+"\n"
+                d1 = str(mtimestamp0)+"|"+str(hostname)+"|"+str(mcomp)+"|"+str(vpxdPID)+"|"+str(mtook)+"|"+str(mtime)+"|"+str(mtime0)[:-3]+"\n"
                 mycsvdata = mycsvdata+d1
                 if ("ServerApp::Start" in mcomp):
                     break
@@ -367,8 +368,7 @@ def grepVpxdComponentTimes(hostname):
         vpxdTook = round(dt.strptime(vpxdStartTime,"%Y-%m-%d %H:%M:%S.%f").timestamp()-dt.strptime(vpxdPIDTime,"%Y-%m-%d %H:%M:%S.%f").timestamp())
         print("Received my data")
         csvdata = getVpxdComponentTimesFromVpxdFile(hostname,vpxdPID,vpxdPIDTime,vpxdStartTime)
-            
-        vpxddt = ""+str(dt.strptime(vpxdPIDTime,"%Y-%m-%d %H:%M:%S.%f").timestamp())+"|"+str(hostname)+"|vpxd|"+str(vpxdPID)+"|"+str(vpxdTook)+"|"+str(vpxdPIDTime)[:-3]+"|"+str(vpxdStartTime)[:-3]
+        vpxddt = ""+str(dt.strptime(vpxdPIDTime,"%Y-%m-%d %H:%M:%S.%f").timestamp())+"|"+str(hostname)+"|vpxd|"+str(vpxdPID)+"|"+str(vpxdTook)+"|"+str(vpxdStartTime)[:-3]+"|"+str(vpxdPIDTime)[:-3]
         print("Received CSV Data")
         if csvdata is not None:
             csvdata = vpxddt+"\n"+csvdata

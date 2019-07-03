@@ -1,0 +1,8 @@
+date|vcName|component|pid|boot_time_in_sec|last_started_at|last_triggered_at
+1562080060|cloud02-w3.stls.local|vpxd|6935|22|2019-07-02 15:08:02.076|2019-07-02 15:07:40.285
+1562080064|cloud02-w3.stls.local|ServerApp::Init[TotalTime]|6935|14|2019-07-02 15:07:58.021|2019-07-02 15:07:44.000
+1562080065|cloud02-w3.stls.local|Init[LocalizationManagerMo::Init()]|6935|3|2019-07-02 15:07:48.095|2019-07-02 15:07:45.000
+1562080069|cloud02-w3.stls.local|Init[AlarmMoManager::Init()]|6935|2|2019-07-02 15:07:51.438|2019-07-02 15:07:49.000
+1562080072|cloud02-w3.stls.local|Init[AuthTenant::TenantManagerImpl::Init()]|6935|6|2019-07-02 15:07:58.021|2019-07-02 15:07:52.000
+1562080078|cloud02-w3.stls.local|ServerApp::Start[TotalTime]|6935|3|2019-07-02 15:08:01.191|2019-07-02 15:07:58.000
+1562080079|cloud02-w3.stls.local|Start[VapiEndpoint::Start()]|6935|2|2019-07-02 15:08:01.182|2019-07-02 15:07:59.000
