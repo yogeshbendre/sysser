@@ -1,0 +1,90 @@
+import java.io.*;
+import java.util.*;
+import java.lang.*;
+
+
+class Node{
+
+	int data;
+	Node left;
+	Node right;
+	
+	public Node(int data){
+	 this.data = data;
+	 this.left = null;
+	 this.right = null;
+	}
+
+}
+
+class Tree{
+
+	Node root;
+	
+	public Tree(int data){
+		root = new Node(data);
+	}
+	
+	public Node addChild(Node p,int data, boolean isLeft){
+		Node c = new Node(data);
+		if(isLeft){
+			p.left = c;
+		}
+		else{
+			p.right = c;
+		}
+		
+		return c;
+	}
+	
+	public void levelOrder(){
+	
+		Queue<Node> myq = new LinkedList<Node>();
+		myq.add(root);
+		while(!myq.isEmpty()){
+			
+			Node n = myq.remove();
+			if(n.left!=null){
+				myq.add(n.left);
+			}
+			if(n.right!=null){
+				myq.add(n.right);
+			}
+			System.out.println(n.data);
+		
+		}
+	
+	}
+
+
+
+
+}
+
+
+}
+
+
+
+
+
+
+Node root = BuildTree(int arr[],0,arr.length-1);
+
+public Node BuildTree(int arr[],int l, int u){
+
+	if(l<0){
+		return null;
+	}
+	if(u>n-1){
+		return null;
+	}
+	int med = (l+u)/2;
+	
+	Node n = new Node(arr[med]);
+	Node l = BuildTree(arr,l,med-1);
+	Node r = BuildTree(arr,med+1,u);
+	n.left = l;
+	n.right = r;
+}
+
