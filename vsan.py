@@ -21,7 +21,7 @@ import sys
 
 
 healthParams = ['advcfgsync', 'autohclupdate', 'clomdliveness', 'clustermembership', 'clusterpartition', 'componentmetadata', 'consistentconfig', 'controllerdiskmode', 'controllerdriver', 'controllerfirmware', 'controlleronhcl', 'controllerreleasesupport', 'dataprotectionversion', 'datastoreusage', 'diskbalance', 'diskspace', 'diskusage', 'dpcfgsync', 'dpdliveness', 'extendedconfig', 'firmwareproviderhealth', 'fwrecommendation', 'hcldbuptodate', 'hostconnectivity', 'hostdisconnected', 'hostlatencycheck', 'largeping', 'limit1hf', 'lsomheap', 'lsomslab', 'nodecomponentlimit', 'objectdphealth', 'objecthealth', 'perfsvcstatus', 'physdiskcapacity', 'physdiskcomplimithealth', 'physdiskcongestion', 'physdiskoverall', 'pnicconsistent', 'rcreservation', 'releasecataloguptodate', 'resynclimit', 'smalldiskstest', 'smallping', 'thickprovision', 'timedrift', 'upgradelowerhosts', 'upgradesoftware', 'vcauthoritative', 'vcuptodate', 'vmotionpinglarge', 'vmotionpingsmall', 'vsanenablesupportinsight', 'vsanvmknic', 'vumconfig', 'vumrecommendation']
-healthParamHeader = '|'.join(healthParams)
+healthParamHeader = 'date|vcName|clusterName|overall|'+'|'.join(healthParams)+"\n"
 
 healthLevel = {'red':'-1','yellow':'0','green':'1'}
 
@@ -90,14 +90,40 @@ def pushvSANDataLevel2(mycsvdata):
         print("pushvSANDataLevel2 failed: "+str(e))
 
 
+
+def findvSanHealthLevel2(lFrom,lTo):
+    try:
+        myout = runCommand("sed '"+str(lFrom)+","+str(int(lTo)-1)+"!d' "+logFile)
+        myhealthstate = []
+        for p in healthParams:
+            try:
+                print('Check: '+str(p))
+                myhealth = myout.split(p)[1].split(':')[1].split('\\n')[0].strip()
+                print(myhealth)
+                myhealthstate.append(healthLevel[myhealth])
+            except Exception as e2:
+                print('findvSanHealthLevel2 failed: '+str(e2)+' marking as yellow')
+                myhealthstate.append('0')
+        
+        print(myhealth)
+        myhealthstate = '|'.join(myhealthstate)
+        return(myhealthstate)
+            
+        
+    except Exception as e:
+        print("findvSanHealthLevel2 failed: "+str(e))
+        return None
+
+
+
 def findvSanHealthLevel1(vcName,mymin):
     
     currTime = dt.now()
     lookback = currTime - td(minutes = mymin)
-    myout = runCommand('cat '+logFile+' | grep "Overall Health" | tail -n 100').split("\\n")
+    myout = runCommand('cat '+logFile+' | grep -n "Overall Health" | tail -n 100').split("\\n")
     
     mycsvdata = None
-    
+    mycsvdata2 = None
     myprocessedclusters = {}
     myclusters = {}
     try:
@@ -106,9 +132,19 @@ def findvSanHealthLevel1(vcName,mymin):
         print('findvSanHealthLevel1 failed: '+str(e1)+", but it's ok, maybe first run.")
         myprocessedclusters={}
     
+    print('Check If Enough Data Available')
+    if len(myout)<3:
+        return None
+    print('Enough Data Available')
+    lastline = myout[-2]
+    myout = myout[:-2]
+    #lines = [lastline.split(' ')[0].split(':')[0]]
+    nextLine = lastline.split(' ')[0].split(':')[0]
     for d in reversed(myout):
         try:
-            mtime = dt.strptime(d.split(' ')[0],'%Y-%m-%dT%H:%M:%S.%fZ')
+            mtime = dt.strptime(':'.join(d.split(' ')[0].split(':')[1:]),'%Y-%m-%dT%H:%M:%S.%fZ')
+            #lines.append(d.split(' ')[0].split(':')[0])
+            currLine = d.split(' ')[0].split(':')[0]
             if mtime < lookback:
                 break
             if mycsvdata is None:
@@ -116,10 +152,12 @@ def findvSanHealthLevel1(vcName,mymin):
             
             clusterName = d.split('Cluster ')[1].split(' Overall')[0].strip()
             if clusterName in myclusters.keys():
+                nextLine = currLine
                 continue
             
             mydate = str(round(currTime.timestamp()))
             if clusterName+'_'+mydate in myprocessedclusters.keys():
+                nextLine = currLine
                 continue
             
             overallHealth = d.split('Overall Health : ')[1].split('\n')[0].strip()
@@ -127,12 +165,21 @@ def findvSanHealthLevel1(vcName,mymin):
             mycsvdata = mycsvdata + d1
             myprocessedclusters[clusterName+'_'+mydate] = overallHealth
             myclusters[clusterName] = overallHealth
+            
+            d2 = findvSanHealthLevel2(currLine,nextLine)
+            d2 = mydate +"|"+vcName+"|"+clusterName+"|"+healthLevel[overallHealth]+"|"+d2+"\n"
+            
+            if mycsvdata2 is None:
+                mycsvdata2 = ""
+            mycsvdata2 = mycsvdata2+d2
+            nextLine = currLine
+            
         except Exception as e:
             print('findvSanHealthLevel1 failed: '+str(e))
     
     json.dump(myprocessedclusters,open(vsanHealthDataJSON,'w'))
     
-    return(mycsvdata)
+    return(mycsvdata,mycsvdata2)
     
 
         
@@ -163,7 +210,8 @@ if __name__ == "__main__":
         outputFolder = args.folder
         if(outputFolder[-1]!='/'):
             outputFolder=outputFolder+'/'
-        mytextoutputfile = outputFolder+'vpxdBootData.txt'
+        mytextoutputfile = outputFolder+'vsanHealthData.txt'
+        mytextoutputfile2 = outputFolder+'vsanHealthDataDetails.txt'
         #myjsonoutputfile = outputFolder+'BootData.json'
 
         
@@ -175,11 +223,17 @@ if __name__ == "__main__":
     
     try:
         pushHeaderAndCreateFileL1()
-        mycsvdata=""
-        mycsvdata = findvSanHealthLevel1(vcName,12)
-        print(mycsvdata)
-        pushvSANDataLevel1(mycsvdata)
+        pushHeaderAndCreateFileL2()
+        mycsvdata,mycsvdata2 = findvSanHealthLevel1(vcName,12)
         
+        print(mycsvdata)
+        if mycsvdata is not None:
+            print(mycsvdata)
+            pushvSANDataLevel1(mycsvdata)
+        
+        if mycsvdata2 is not None:
+            print(mycsvdata2)
+            pushvSANDataLevel2(mycsvdata2)
         #pushVpxdData(mycsvdata)
     
     except Exception as e:
