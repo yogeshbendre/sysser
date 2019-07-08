@@ -156,14 +156,18 @@ def findvSanHealthLevel1(vcName,mymin):
                 continue
             
             mydate = str(round(currTime.timestamp()))
-            if clusterName+'_'+mydate in myprocessedclusters.keys():
-                nextLine = currLine
-                continue
+            if clusterName in myprocessedclusters.keys():
+                if myprocessedclusters[clusterName]['times'][-1] > round(lookback.timestamp()):
+                    nextLine = currLine
+                    continue
             
             overallHealth = d.split('Overall Health : ')[1].split('\n')[0].strip()
             d1 = mydate +"|"+vcName+"|"+clusterName+"|"+overallHealth+"|"+healthLevel[overallHealth]+"\n"
             mycsvdata = mycsvdata + d1
-            myprocessedclusters[clusterName+'_'+mydate] = overallHealth
+            if clusterName not in myprocessedclusters.keys():
+                myprocessedclusters[clusterName] = {'times':[],'states':[]}
+            myprocessedclusters[clusterName]['times'].append(int(mydate))
+            myprocessedclusters[clusterName]['states'].append(str(overallHealth))
             myclusters[clusterName] = overallHealth
             
             d2 = findvSanHealthLevel2(currLine,nextLine)
@@ -204,6 +208,7 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--vcName", help="Specify vCenter Name. Default: system hostname",type=str)
     parser.add_argument("-f","--folder", type=str,help="Specify output folder. Default: current directory")
     parser.add_argument("-l","--logfile", type=str,help="Specify vpxd log file path. Default: /var/log/vmware/vsan-health/vmware-vsan-health-summary-result.log")
+    parser.add_argument("-m","--minutes", type=str,help="Specify time in minutes for collection. Default: 10 min")
     args = parser.parse_args()
     
     if args.folder:
@@ -221,10 +226,14 @@ if __name__ == "__main__":
     if args.logfile:
         logFile = args.logfile
     
+    minutes = 12
+    if args.minutes:
+        minutes = int(args.minutes)
+
     try:
         pushHeaderAndCreateFileL1()
         pushHeaderAndCreateFileL2()
-        mycsvdata,mycsvdata2 = findvSanHealthLevel1(vcName,12)
+        mycsvdata,mycsvdata2 = findvSanHealthLevel1(vcName,minutes)
         
         print(mycsvdata)
         if mycsvdata is not None:
