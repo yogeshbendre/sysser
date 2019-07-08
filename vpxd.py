@@ -12,12 +12,14 @@ import socket
 import argparse
 import sys
 
+import RCADataFilesUtility as RDF
 
 from LIUtils import LIUtils
 
 bootDataJSON = '/var/log/BootData.json'
 vpxdBootDataJSON = '/var/log/vmware/vpxdBootData.json'
-mytextoutputfile = '/var/log/vpxdBootData.txt'
+mytextoutputfile = '/var/log/vmware/vpxdBootData.txt'
+mydeltaoutputfile = '/var/log/vmware/vpxdBootDataDelta.txt'
 vpxdLogFile = '/var/log/vmware/vpxd/vpxd.log'
 
 
@@ -190,6 +192,24 @@ def pushHeaderAndCreateFile():
         myheader = 'date|vcName|component|pid|boot_time_in_sec|last_started_at|last_triggered_at\n'
         with open(mytextoutputfile,"w") as fp:
             fp.write(myheader)
+        
+
+def pushToDeltaFile(mycsvdata):
+    
+    try:
+        if (mycsvdata is None) or (len(mycsvdata) < 2):
+            mydata=""
+        else:
+            myheader = 'date|vcName|component|pid|boot_time_in_sec|last_started_at|last_triggered_at\n'
+            mydata = myheader+mycsvdata
+        
+        with open(mydeltaoutputfile,"w") as fp:
+            fp.write(mydata)
+            
+
+    except Exception as e:
+        print("pushToDeltaFile failed: "+str(e))
+        
         
 
 def pushVpxdData(mycsvdata):
@@ -401,7 +421,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument("-v", "--vcName", help="Specify vCenter Name. Default: system hostname",type=str)
-    parser.add_argument("-f","--folder", type=str,help="Specify output folder. Default: current directory")
+    parser.add_argument("-f","--folder", type=str,help="Specify output folder. Default: /var/log/vmware")
+    parser.add_argument("-d","--deltafile", type=str,help="Specify path for delta file. Default: /var/log/vmware/vxpdBootDataDelta.txt")
     parser.add_argument("-x","--vpxdfile", type=str,help="Specify vpxd log file path. Default: /var/log/vmware/vpxd/vpxd.log")
     args = parser.parse_args()
     
@@ -410,6 +431,12 @@ if __name__ == "__main__":
         if(outputFolder[-1]!='/'):
             outputFolder=outputFolder+'/'
         mytextoutputfile = outputFolder+'vpxdBootData.txt'
+        #myjsonoutputfile = outputFolder+'BootData.json'
+    if args.deltafile:
+        #deltaoutputFolder = args.deltafolder
+        #if(deltaoutputFolder[-1]!='/'):
+#            deltaoutputFolder=deltaoutputFolder+'/'
+        mydeltaoutputfile = args.deltafile
         #myjsonoutputfile = outputFolder+'BootData.json'
 
         
@@ -420,7 +447,7 @@ if __name__ == "__main__":
         vpxdLogFile = args.vpxdfile
     
     try:
-        pushHeaderAndCreateFile()
+        #pushHeaderAndCreateFile()
         mycsvdata=""
         if isLIAttached():
             mycsvdata = findVpxdComponentTimes(vcName)
@@ -428,7 +455,13 @@ if __name__ == "__main__":
             print("No LogInsight found, fallback to greppin the vpxd file")
             mycsvdata = grepVpxdComponentTimes(vcName)
         
-        pushVpxdData(mycsvdata)
+        
+        myheader = 'date|vcName|component|pid|boot_time_in_sec|last_started_at|last_triggered_at\n'
+        
+        RDF.pushToDeltaFile(mydeltaoutputfile,myheader,mycsvdata)
+        RDF.pushToFullFile(mytextoutputfile,myheader,mycsvdata)
+        #pushVpxdData(mycsvdata)
+        #pushToDeltaFile(mycsvdata)
     
     except Exception as e:
         print("vpxd component data collection failed: "+str(e))
