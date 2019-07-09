@@ -1,0 +1,2 @@
+date|vcName|clusterName|overallHealth|overallHealthLevel
+1562660417|cloud02-w3.stls.local|ZVx0|red|-1
